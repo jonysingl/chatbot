@@ -27,12 +27,15 @@
             min-height: 100vh;
         }
 
-        /* 登录按钮样式 */
-        .login-button {
+        /* 用户区域样式 */
+        .user-area {
             position: fixed;
             top: 20px;
             right: 20px;
             z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .login-btn {
@@ -50,6 +53,35 @@
 
         .login-btn:hover {
             background-color: #5e97f6;
+        }
+
+        .user-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background-color: #4a6fa5;
+            color: white;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background-color: #e74c3c;
+            color: white;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 12px;
+            transition: background-color 0.3s;
+        }
+
+        .logout-btn:hover {
+            background-color: #c0392b;
         }
 
         /* 侧边栏样式 */
@@ -352,12 +384,23 @@
 </head>
 <body>
 <div class="container">
-    <!-- 登录按钮 -->
-    <div class="login-button">
-        <a href="login.html" class="login-btn" id="loginButton">
+    <!-- 用户区域 - 登录/登出 -->
+    <div class="user-area" id="userArea">
+        {% if username %}
+        <div class="user-btn">
+            <i class="fas fa-user-circle"></i>
+            {{ username }}
+        </div>
+        <a href="/logout" class="logout-btn">
+            <i class="fas fa-sign-out-alt"></i>
+            退出
+        </a>
+        {% else %}
+        <a href="/login" class="login-btn" id="loginButton">
             <i class="fas fa-sign-in-alt"></i>
             登录
         </a>
+        {% endif %}
     </div>
 
     <!-- 左侧边栏 -->
@@ -365,7 +408,14 @@
         <button id="newConversationButton">开启新对话</button>
         <div id="conversationHistory">
             <div class="history-title">对话历史</div>
+            {% if username %}
+            <div class="conversation-item active">
+                <div class="conv-title">最近对话</div>
+                <div class="conv-date">{{ current_time }}</div>
+            </div>
+            {% else %}
             <p class="please-login">请登录以查看历史记录</p>
+            {% endif %}
         </div>
     </div>
 
@@ -387,7 +437,11 @@
                         <i class="fas fa-robot"></i>
                     </div>
                     <div class="message-content">
+                        {% if username %}
+                        您好，{{ username }}！我是智能聊天助手，请问有什么可以帮您的吗？
+                        {% else %}
                         您好！我是智能聊天助手，请问有什么可以帮您的吗？
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -407,7 +461,7 @@
 
             <!-- 学习计划按钮 -->
             <div class="study-plan-container">
-                <a href="studyPlan.html" class="study-plan-btn">
+                <a href="/studyPlan" class="study-plan-btn">
                     <i class="fas fa-book"></i>
                     制定我的学习计划
                 </a>
@@ -443,5 +497,124 @@
         </div>
     </div>
 </div>
+
+<script>
+    // 聊天功能
+    document.addEventListener('DOMContentLoaded', function() {
+        const chatInput = document.getElementById('chatInput');
+        const sendButton = document.getElementById('sendButton');
+        const chatOutput = document.getElementById('chatOutput');
+        const typingIndicator = document.getElementById('typingIndicator');
+
+        // 发送消息函数
+        function sendMessage() {
+            const message = chatInput.value.trim();
+            if (message) {
+                // 添加用户消息
+                const userMessageDiv = document.createElement('div');
+                userMessageDiv.className = 'user-message';
+                userMessageDiv.innerHTML = `
+                    <div class="message-content">${message}</div>
+                    <div class="avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                `;
+                chatOutput.appendChild(userMessageDiv);
+
+                // 清空输入框
+                chatInput.value = '';
+
+                // 滚动到底部
+                chatOutput.scrollTop = chatOutput.scrollHeight;
+
+                // 显示打字指示器
+                typingIndicator.style.display = 'flex';
+
+                // 模拟AI回复
+                setTimeout(() => {
+                    // 隐藏打字指示器
+                    typingIndicator.style.display = 'none';
+
+                    // 添加机器人回复
+                    const botMessageDiv = document.createElement('div');
+                    botMessageDiv.className = 'bot-message';
+                    botMessageDiv.innerHTML = `
+                        <div class="avatar">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="message-content">
+                            我收到了您的消息："${message}"。目前这是一个演示界面，还不支持真实的AI对话功能。
+                        </div>
+                    `;
+                    chatOutput.appendChild(botMessageDiv);
+
+                    // 滚动到底部
+                    chatOutput.scrollTop = chatOutput.scrollHeight;
+                }, 1500);
+            }
+        }
+
+        // 点击发送按钮或按Enter键发送消息
+        sendButton.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // 任务项目点击事件
+        const taskItems = document.querySelectorAll('.task-item');
+        taskItems.forEach(item => {
+            const checkbox = item.querySelector('input[type="checkbox"]');
+            checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    item.classList.add('completed');
+                } else {
+                    item.classList.remove('completed');
+                }
+            });
+        });
+
+        // 添加任务按钮（示例）
+        document.getElementById('addTaskButton').addEventListener('click', function() {
+            const taskList = document.getElementById('taskList');
+            const taskId = 'task' + (taskList.children.length + 1);
+
+            const taskItem = document.createElement('div');
+            taskItem.className = 'task-item';
+            taskItem.innerHTML = `
+                <input type="checkbox" id="${taskId}">
+                <label for="${taskId}">新任务</label>
+            `;
+
+            taskList.appendChild(taskItem);
+
+            // 为新添加的任务添加事件监听
+            const checkbox = taskItem.querySelector('input[type="checkbox"]');
+            checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    taskItem.classList.add('completed');
+                } else {
+                    taskItem.classList.remove('completed');
+                }
+            });
+        });
+
+        // 开启新对话
+        document.getElementById('newConversationButton').addEventListener('click', function() {
+            // 清空聊天记录
+            chatOutput.innerHTML = `
+                <div class="bot-message">
+                    <div class="avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="message-content">
+                        您好！我是智能聊天助手，请问有什么可以帮您的吗？
+                    </div>
+                </div>
+            `;
+        });
+    });
+</script>
 </body>
 </html>

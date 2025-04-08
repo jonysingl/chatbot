@@ -8,7 +8,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # 数据库连接URL - 确保正确配置
-SQLALCHEMY_DATABASE_URL = "mysql+pymysql://root:123456@localhost/chatbot"
+SQLALCHEMY_DATABASE_URL = "mysql+pymysql://root:123456@localhost/chatsql"
 
 try:
     # 创建引擎，启用池回收和连接前测试
